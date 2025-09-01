@@ -1,55 +1,44 @@
 import { MarkdownItAsync } from "markdown-it-async";
 
 import { fromAsyncCodeToHtml } from "@shikijs/markdown-it/async";
-import {
-  bundledLanguages,
-  bundledThemes,
-  codeToHtml,
-  createHighlighter,
-} from "shiki"; // Or your custom shorthand bundle
+import { codeToHtml } from "shiki"; // Or your custom shorthand bundle
 
-import { codeWrapperPlugin } from "../plugins";
+import { codeWrapperPlugin, createCodeGroup } from "../plugins";
 const codeCopyButtonTitle = "Copy Code";
 const hasSingleTheme = "";
 
 export async function createMarkdownInstance() {
   let mdInstance = null;
   if (!mdInstance) {
-    async function createHighlight(str: string, lang: string) {
-      const highlight = await createHighlighter({
-        themes: ["github-light", "github-dark"],
-        langs: Object.keys(bundledLanguages),
-      });
-      return highlight.codeToHtml(str, {
-        theme: "github-light",
-        lang,
-        transformers: [
-          {
-            name: "vitepress:add-class",
-            pre(node) {
-              this.addClassToHast(node, "vp-code");
-            },
-          },
-        ],
-      });
-    }
-
     const md = new MarkdownItAsync({
       html: true,
-      linkify: true,
-      highlight: (str, lang) => createHighlight(str, lang),
+      // linkify: true,
     });
 
     md.use(
-      fromAsyncCodeToHtml(codeToHtml, {
-        themes: {
-          light: "github-light",
-          dark: "github-dark",
+      fromAsyncCodeToHtml(
+        (code, options) => {
+          return codeToHtml(code, options);
         },
-      })
+        {
+          themes: {
+            light: "github-light",
+            dark: "github-dark",
+          },
+          transformers: [
+            {
+              name: "vitepress:add-class",
+              pre(node) {
+                node.properties.style = ''
+                this.addClassToHast(node, "vp-code");
+              },
+            },
+          ],
+        }
+      )
     );
-
     md.use(codeWrapperPlugin, { codeCopyButtonTitle, hasSingleTheme });
+    md.use(createCodeGroup, { codeCopyButtonTitle, hasSingleTheme });
     mdInstance = md;
   }
   return mdInstance;

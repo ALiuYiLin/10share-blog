@@ -8,6 +8,9 @@ import'~/assets/css/vars.css'
 import'~/assets/css/base.css'
 import'~/assets/css/utils.css'
 import'~/assets/css/vp-doc.css'
+import'~/assets/css/vp-code.css'
+import'~/assets/css/icons.css'
+import'~/assets/css/fonts.css'
 
 async function submit() {
   const html = await $fetch<string>('/api/render', {
@@ -20,4 +23,13 @@ async function submit() {
   document.getElementById('app')?.appendChild(container)
 }
 </script>
+
+<style scoped>
+#app {
+  width: 688px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+</style>
 
