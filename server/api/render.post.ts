@@ -1,9 +1,13 @@
-import markdown from 'markdown-it'
-const md = new markdown()
+import MarkdownIt from "markdown-it";
+import fs from "fs";
+import Shiki from "@shikijs/markdown-it";
+import { createMarkdownInstance } from "../../utils";
 export interface RenderBody {
-  content: string
+  content: string;
 }
 export default defineEventHandler(async (event) => {
-  const body = await readBody<RenderBody>(event)
-  return md.render(body.content)
-})
+  const body = await readBody<RenderBody>(event);
+  const md = await createMarkdownInstance();
+  const content = await fs.readFileSync("content/example/index.md", "utf-8");
+  return await md.renderAsync(content);
+});
