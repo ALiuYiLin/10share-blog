@@ -1,5 +1,5 @@
 import MarkdownIt from "markdown-it";
-import { extractLang, getAdaptiveThemeMarker, Options } from "./utils";
+import { extractLang, getAdaptiveThemeMarker, type Options } from "./utils";
 
 
 

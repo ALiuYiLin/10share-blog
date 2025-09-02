@@ -11,6 +11,7 @@ import'~/assets/css/vp-doc.css'
 import'~/assets/css/vp-code.css'
 import'~/assets/css/icons.css'
 import'~/assets/css/fonts.css'
+import'~/assets/css/custom-block.css'
 
 async function submit() {
   const html = await $fetch<string>('/api/render', {

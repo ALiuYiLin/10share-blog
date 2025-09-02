@@ -1,6 +1,4 @@
-import MarkdownIt from "markdown-it";
 import fs from "fs";
-import Shiki from "@shikijs/markdown-it";
 import { createMarkdownInstance } from "../../utils";
 export interface RenderBody {
   content: string;

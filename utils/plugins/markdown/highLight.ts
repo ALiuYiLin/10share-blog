@@ -1,10 +1,7 @@
 import {
-  fromAsyncCodeToHtml,
-  MarkdownItShikiSetupOptions,
+  type MarkdownItShikiSetupOptions,
 } from "@shikijs/markdown-it/async";
-import MarkdownIt from "markdown-it";
-import { codeToHtml } from "shiki"; // Or your custom shorthand bundle
-const options: MarkdownItShikiSetupOptions = {
+export const markdownItShikiSetupOptions: MarkdownItShikiSetupOptions = {
   themes: {
     light: "github-light",
     dark: "github-dark",
@@ -20,8 +17,3 @@ const options: MarkdownItShikiSetupOptions = {
   ],
 };
 
-export function highlightCode(md: MarkdownIt) {
-  return fromAsyncCodeToHtml((code, options) => {
-    return codeToHtml(code, options);
-  }, options);
-}
