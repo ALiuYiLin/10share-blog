@@ -1,8 +1,9 @@
-import fs from "fs"
-import path from "path"
+import fs from "fs";
+import path from "path";
+import { copySync, existsSync } from "fs-extra";
 
-export async function readAllFilesAsync(dirPath:string) {
-  const filePaths:string[] = [];
+export async function readAllFilesAsync(dirPath: string) {
+  const filePaths: string[] = [];
 
   // 读取当前目录下的 dirent 对象数组
   const items = await fs.readdirSync(dirPath, { withFileTypes: true });
@@ -24,7 +25,7 @@ export async function readAllFilesAsync(dirPath:string) {
   return filePaths;
 }
 
-export function removeExtension(filePath:string) {
+export function removeExtension(filePath: string) {
   // 标准化路径（处理冗余分隔符、末尾分隔符等）
   const normalizedPath = path.normalize(filePath);
 
@@ -37,4 +38,21 @@ export function removeExtension(filePath:string) {
   // 重组目录和文件名（无扩展名）
   const dir = path.dirname(normalizedPath);
   return path.join(dir, basenameWithoutExt);
+}
+
+export function copyDir(sourceDir: string, targetDir: string) {
+  try {
+    if (!existsSync(sourceDir)) {
+      console.warn(`⚠️ 源目录不存在: ${sourceDir}`);
+      return;
+    }
+    copySync(sourceDir, targetDir, {
+      overwrite: true,
+      errorOnExist: false,
+    });
+    console.log(`✅ 成功复制文件: ${sourceDir} → ${targetDir}`);
+  } catch (error) {
+    console.error(`❌ 复制失败: ${error}`);
+    process.exit(1); // 复制失败时终止构建
+  }
 }

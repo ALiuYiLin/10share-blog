@@ -1,11 +1,13 @@
 import path from "path"
-import { fileURLToPath } from 'url';
 import { readAllFilesAsync, removeExtension } from "../file";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { devBlogsDir, outPutBlogsDir } from "../constant";
 
 export async function getBlogPaths() {
-  const dirPath =  path.resolve(__dirname,'../blogs')
+  let dirPath = ''
+  if(process.env.NODE_ENV == 'production'){
+    dirPath =  outPutBlogsDir
+  }
+  else dirPath =  devBlogsDir
   
   const filePaths = await readAllFilesAsync(dirPath)
 

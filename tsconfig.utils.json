@@ -15,7 +15,7 @@
     "jsxFragmentFactory": "Fragment",
     "strictNullChecks": false,
     "paths": {
-      "#shared": ["./shared"]
+      "#shared": ["./shared"],
     }
   },
   "include": [
