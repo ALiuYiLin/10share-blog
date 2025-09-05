@@ -1,7 +1,8 @@
 <template>
   <div id="app">
-    <h1 @click="router.push('test')">test </h1>
-    <h1 @click="router.push('blog')">blog </h1>
+    <ul>
+      <li v-for="route in router.options.routes"><h1 @click="router.push(route.path)">{{ route.name }}</h1></li>
+    </ul>
   </div>
 </template>
 <script setup lang="ts">
