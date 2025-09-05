@@ -1,5 +1,8 @@
+<script lang="ts" setup>
+import layout from './layout/layout.vue';
+
+</script>
+
 <template>
-  <div>
-    <nuxt-page />
-  </div>
+  <layout></layout>
 </template>
