@@ -1,18 +1,16 @@
 <script lang="ts" setup>
-const props = defineProps({
-  content: {
-    type: String,
-    default: "nihao \n hello",
-  },
-});
+const content = defineModel({
+  type: String,
+  default: ''
+})
+
 const myEditor = useTemplateRef('my-editor')
 const selectedLine = ref<HTMLDivElement>()
 function handlerMutaion(mutation: MutationRecord) {
   const selection = window.getSelection()
   if(mutation.type === 'characterData'){
     // 文本内容变化 
-    const mycontent = Array.from(myEditor.value!.children).map(e=>e.textContent).join('\n')
-    console.log('mycontent: ', mycontent);
+    content.value = Array.from(myEditor.value!.children).map(e=>e.textContent).join('\n')
   }
   if(mutation.type === 'childList'){
     // 子节点增加或删除
@@ -32,13 +30,15 @@ function handlerMutaion(mutation: MutationRecord) {
         myEditor.value?.appendChild(newLine)
       }
       else{
-        if(node.nodeName === 'DIV'){
-          switchActive(selection?.anchorNode as HTMLDivElement)
+        if(node.nodeType === 1 && node.nodeName === 'DIV' && selection?.anchorNode  ){
+          const lineEl = findLine(selection!.anchorNode)
+          switchActive(lineEl as HTMLDivElement)
         }
       }
     })
   }
 }
+
 function lineCreate(str?:string){
   const line = document.createElement('div')
   line.className = 'cm-line'
@@ -52,9 +52,22 @@ function switchActive(line:HTMLDivElement){
   selectedLine.value = line
 }
 
+function findLine(anchorNode:Node){
+  let node = anchorNode
+  let lineEl = null
+  while(node){
+    if(node.nodeType ===1 && node.nodeName === 'DIV' && (node as HTMLElement).classList.contains('cm-line')){
+      lineEl = node as HTMLDivElement
+      break
+    }
+    node = node.parentNode as Node
+  }
+  return lineEl
+}
+
 onMounted(()=>{
   //初始化
-  const lines = props.content.split('\n')
+  const lines = content.value.split('\n')
   lines.forEach((line)=>{
     const lineDiv = lineCreate(line)
     myEditor.value?.appendChild(lineDiv)
@@ -79,28 +92,17 @@ onMounted(()=>{
 
 function editClick(){
   const selection = window.getSelection()
-  let flag = false
-  let node = selection?.anchorNode
-  while(!flag){
-    if(node?.nodeType === 1 && node.nodeName === 'DIV' && (node as HTMLDivElement).classList.contains('cm-line')){
-      switchActive(node as HTMLDivElement)
-      flag = true
-      break
-    }
-    else{
-      node = node?.parentNode
-      if(!node) {
-        flag = true
-        break
-      }
-    }
+  if(selection?.anchorNode) {
+    let lineEl = findLine(selection.anchorNode)
+    if(lineEl) switchActive(lineEl)
   }
 }
 
+defineExpose(['content'])
+
 </script>
 <template>
-  <div id="editor" class="md-editor-wrapper" contenteditable="true"ref="my-editor"  @click="editClick">
-    <div v-for="i in 1"  class="cm-line"></div>
+  <div id="editor" class="md-editor-wrapper" contenteditable="true"ref="my-editor" autocorrect="off" autocapitalize="off"  translate="no" spellcheck="false"  @click="editClick">
   </div>
 </template>
 
@@ -120,6 +122,8 @@ function editClick(){
 
 .cm-line{
   height: 20.8px;
+  border-bottom: 0;
+  
 }
 
 .cm-line.active {
