@@ -1,5 +1,5 @@
+import { createMarkdownInstance } from "~~/utils";
 import fs from "fs";
-import { createMarkdownInstance } from "@@/utils";
 
 export default defineEventHandler(async (event) => {
   const slug = event.context.params!.slug;
