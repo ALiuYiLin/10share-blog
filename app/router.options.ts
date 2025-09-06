@@ -25,7 +25,7 @@ export default {
     {
       name: 'edit',
       path: '/edit',
-      component: () => import('@/pages/edit.vue')
+      component: () => import('@/pages/edit/edit.vue')
     }
   ],
 } satisfies RouterConfig
