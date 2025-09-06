@@ -2,98 +2,109 @@
 const props = defineProps({
   content: {
     type: String,
-    default: "",
+    default: "nihao \n hello",
   },
 });
-const myeditor = useTemplateRef('myeditor')
-
-// 处理文本变化
-function handleTextChange(mutation: MutationRecord) {
-  if (mutation.type === 'characterData') {
-    const mycontent = Array.from(myeditor.value!.children).map(el=>el.textContent.trim()).join('\n')
-    console.log(mycontent);
+const myEditor = useTemplateRef('my-editor')
+const selectedLine = ref<HTMLDivElement>()
+function handlerMutaion(mutation: MutationRecord) {
+  const selection = window.getSelection()
+  if(mutation.type === 'characterData'){
+    // 文本内容变化 
+    const mycontent = Array.from(myEditor.value!.children).map(e=>e.textContent).join('\n')
+    console.log('mycontent: ', mycontent);
   }
-  if (mutation.type === "childList") {
-    // 处理子节点增删（如用户输入导致文本节点拆分）
-    mutation.addedNodes.forEach((node) => {
-      if(node.nodeName === 'DIV') {
-        changeSelectedLine(node as HTMLElement)
+  if(mutation.type === 'childList'){
+    // 子节点增加或删除
+
+    mutation.addedNodes.forEach((node)=>{
+      // 子节点增加处理
+      if(node.nodeName === 'DIV'){
+        switchActive(node as HTMLDivElement)
       }
-    });
-    mutation.removedNodes.forEach((node) =>{
-      if(node.nodeName === 'DIV') {
-        if(!myeditor.value?.childElementCount){
-          const line = document.createElement('div')
-          line.className = 'cm-line'
-          myeditor.value!.appendChild(line) 
+    })
+    mutation.removedNodes.forEach((node)=>{
+      // 子节点删除处理
+      if(!myEditor.value?.childElementCount){
+        // 当删除后 editor没有子节点创造一个晒给它
+        const newLine = lineCreate()
+        newLine.className = 'cm-line active'
+        myEditor.value?.appendChild(newLine)
+      }
+      else{
+        if(node.nodeName === 'DIV'){
+          switchActive(selection?.anchorNode as HTMLDivElement)
         }
-        const s= window.getSelection()
-        console.log('s: ', s);
       }
     })
   }
 }
-
-onMounted(() => {
-  const editor = document.getElementById("editor");
-  // 创建 Mutation Observer 实例
-  const observer = new MutationObserver((mutationsList) => {
-    for (const mutation of mutationsList) {
-      handleTextChange(mutation);
-    }
-  });
-
-  // 配置观察选项（监听文本变化和子节点变化）
-  const options = {
-    childList: true, // 观察直接子节点增删
-    subtree: true, // 观察所有后代节点
-    characterData: true, // 观察文本内容变化
-    characterDataOldValue: true, // 记录旧值
-  };
-
-  // 启动监听
-  observer.observe(editor!, options);
-});
-const selectedLine = ref<HTMLElement | null>(null)
-
-
-function keydown(e:KeyboardEvent){
-  // console.log('e.target: ', e.target);
+function lineCreate(str?:string){
+  const line = document.createElement('div')
+  line.className = 'cm-line'
+  if(str) line.innerText = str
+  return line
 }
-
-function changeSelectedLine(newEl:HTMLElement){
-  if(newEl == selectedLine.value) return
-  newEl.classList.add('active')
-  newEl.classList.add('cm-line')
+function switchActive(line:HTMLDivElement){
+  if(line === selectedLine.value) return
+  line.classList.add('active')
   selectedLine.value?.classList.remove('active')
-  selectedLine.value = newEl
+  selectedLine.value = line
 }
-    
-function click(e:MouseEvent){
-  const target = e.target as HTMLElement
-  if(target.classList.contains('cm-line')){
-    changeSelectedLine(target)
+
+onMounted(()=>{
+  //初始化
+  const lines = props.content.split('\n')
+  lines.forEach((line)=>{
+    const lineDiv = lineCreate(line)
+    myEditor.value?.appendChild(lineDiv)
+  })
+
+  //添加监听器
+  const observer = new MutationObserver((mutationsList)=>{
+    for(const mutaion of mutationsList){
+      handlerMutaion(mutaion)
+    }
+  })
+
+  // 配置观察选项
+  const options:MutationObserverInit = {
+    childList: true, //监听子节点的增删
+    characterData: true, // 监听文本内容变化
+    subtree: true
   }
-  else{
-    // console.log('target: ', target);
+  observer.observe(myEditor.value!,options)
+
+})
+
+function editClick(){
+  const selection = window.getSelection()
+  let flag = false
+  let node = selection?.anchorNode
+  while(!flag){
+    if(node?.nodeType === 1 && node.nodeName === 'DIV' && (node as HTMLDivElement).classList.contains('cm-line')){
+      switchActive(node as HTMLDivElement)
+      flag = true
+      break
+    }
+    else{
+      node = node?.parentNode
+      if(!node) {
+        flag = true
+        break
+      }
+    }
   }
 }
 
 </script>
 <template>
-  <div id="editor" class="md-editor-wrapper" 
-  role="textbox"
-  aria-multiline="true"
-  contenteditable="true"
-  ref="myeditor"
-  @keypress="keydown"
-  @click="click"
-  >
+  <div id="editor" class="md-editor-wrapper" contenteditable="true"ref="my-editor"  @click="editClick">
     <div v-for="i in 1"  class="cm-line"></div>
   </div>
 </template>
 
-<style  scoped>
+<style>
 .md-editor-wrapper {
   width: 800px;
   min-height: 600px;
@@ -106,10 +117,13 @@ function click(e:MouseEvent){
   border: 1px black solid;
 
 }
+
 .cm-line{
   height: 20.8px;
 }
+
 .cm-line.active {
   background-color: beige;
 }
+
 </style>
