@@ -1,3 +1,9 @@
+<script lang="ts" setup>
+import SvgIcon from '~/components/SvgIcon.vue';
+
+</script>
 <template>
-  <h1>test page</h1>
+  <div>
+    <SvgIcon :name="'more'"></SvgIcon>
+  </div>
 </template>
