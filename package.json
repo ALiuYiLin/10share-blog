@@ -27,6 +27,8 @@
     "highlight": "^0.2.4",
     "markdown-it-async": "^2.2.0",
     "markdown-it-container": "^4.0.0",
+    "rollup": "^4.50.1",
+    "rollup-plugin-vue": "^6.0.0",
     "vite-plugin-svg-icons": "^2.0.1"
   }
 }
