@@ -7,6 +7,9 @@ export const nuxtHooks = {
   'nitro:build:public-assets':(nitro)=>{
     nitro.hooks.addHooks(copyBlogsNitroHook)
   },
+  'build:analyze:done':(meta)=>{
+
+  },
   'build:before':()=>{
     copyDir(blogsDir,devBlogsDir)
   }

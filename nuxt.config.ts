@@ -2,6 +2,7 @@
 import path from "path";
 import { nuxtHooks } from "./utils";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -29,17 +30,15 @@ export default defineNuxtConfig({
     },
   },
   vite: {
+    build:{
+      sourcemap: true,
+      ssrManifest:'.vie/ssr-manifest.json'
+    },
     plugins: [
       createSvgIconsPlugin({
         iconDirs: [path.resolve(__dirname, "app/assets/icons")],
         symbolId: "icon-[dir]-[name]",
       }),
-      {
-        name: "skip-with-comment",
-        transform(code, id, options) {
-          if (id.startsWith("blob:")) return "";
-        },
-      },
     ],
   },
 });

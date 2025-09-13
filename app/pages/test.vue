@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import SvgIcon from '~/components/SvgIcon.vue';
-import { createElementBlock, openBlock, createElementVNode, createVNode, render } from 'vue';
+
+import {createVNode, render } from 'vue';
 const test = useTemplateRef('test')
 const codeStr = `\
 import { createElementBlock, openBlock, createElementVNode, createVNode } from 'vue';
@@ -43,18 +44,21 @@ onMounted(async ()=>{
   console.log('moduleUrl: ', moduleUrl);
 
   /* vite-skip-analysis */
-  const MainVue = await (await import(moduleUrl)).default
+  const MainVue = await (await import(/* @vite-ignore */moduleUrl)).default
   console.log('MainVue: ', MainVue);
 
   const container = document.createElement('div')
   const vNode = createVNode(MainVue,{})
   render(vNode,container)
   test.value?.appendChild(container.firstChild!)
+
+  $fetch('/api/test')
 })
 </script>
 <template>
   <div ref="test">
     <SvgIcon :name="'more'"></SvgIcon>
+    <Zzzz></Zzzz>
     <!-- <MainVue></MainVue> -->
   </div>
 </template>
