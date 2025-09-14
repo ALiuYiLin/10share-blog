@@ -1,6 +1,6 @@
 import { MarkdownItAsync } from "markdown-it-async";
+import { mdUsePlugins } from "@@/plugins";
 
-import {  mdUsePlugins } from "../../plugins";
 
 
 

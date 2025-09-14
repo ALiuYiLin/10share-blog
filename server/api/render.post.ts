@@ -1,4 +1,4 @@
-import { createMarkdownInstance } from "~~/utils";
+import { createMarkdownInstance } from "@@/instance";
 
 export default defineEventHandler(async (event) => {
   const {content} = await readBody<{content:string}>(event)

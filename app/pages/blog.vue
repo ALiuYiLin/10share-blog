@@ -17,7 +17,7 @@ const blogPaths = ref<string[] | null>(null)
 async function loadBlogContent(blogPath:string) {
   let html:string = ''
   try {
-    html = await $fetch<string>(`/api/render/${blogPath}`, {method: 'get'})
+    html = await $fetch<string>(`/api/render/?path=${blogPath}`, {method: 'get'})
   } catch (error) {
     console.log('error: ', error);
   }
