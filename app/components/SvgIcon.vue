@@ -5,6 +5,7 @@
 </template>
 
 <script lang="ts" setup>
+import '@/components/xxx.css'
 defineProps({
   name:{ 
     type: String,
@@ -12,11 +13,3 @@ defineProps({
    }
 })
 </script>
-
-<style>
-.icon {
-  width: 1em;
-  height: 1em;
-  fill: currentColor;
-}
-</style>

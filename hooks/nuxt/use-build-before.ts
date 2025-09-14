@@ -1,6 +1,7 @@
 import { copySync } from "fs-extra";
 import { NuxtHooks } from "nuxt/schema";
 import { baseTsConfigPath, devBaseTsConfigPath, devDocsRoot, docsRoot, outputDocsRoot } from "../../utils";
+import { fsVol } from "../../instance";
 
 export const useBuildBefore: NuxtHooks["build:before"] = () => {
   // copy docs to .nuxt/docs
@@ -12,5 +13,8 @@ export const useBuildBefore: NuxtHooks["build:before"] = () => {
   // copy tsconfig.base.json to .nuxt/tsconfig.base.json
   copySync(baseTsConfigPath, devBaseTsConfigPath, { overwrite: true, errorOnExist: false });
   console.log(`成功复制${baseTsConfigPath}=>${devBaseTsConfigPath}`);
+
+  // // create dir @virtual0
+  // fsVol.promises.mkdir('@virtual',{recursive:true})
 
 };
