@@ -7,8 +7,15 @@ import vuePlugin from "@vitejs/plugin-vue";
 import esbuild from "rollup-plugin-esbuild";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 import path from "path";
-import postcss from 'rollup-plugin-postcss'; // 处理 CSS/SCSS
+// import postcss from 'rollup-plugin-postcss'; // 处理 CSS/SCSS
+import { createRequire } from 'module';
 import commonjs from 'rollup-plugin-commonjs';
+import vue from 'rollup-plugin-vue';
+
+
+const require = createRequire(import.meta.url);
+
+const postcss = require('rollup-plugin-postcss');
 
 import nodeResolve from '@rollup/plugin-node-resolve';
 import css from 'rollup-plugin-css-only';
@@ -61,21 +68,34 @@ import test from '@/components/test.vue';
           }
           return source;
         },
-      },
+      },  
+
 
       createSvgIconsPlugin({
         iconDirs: [path.resolve(appRoot, "app/assets/icons")],
         symbolId: "icon-[dir]-[name]",
       }),
       // @ts-ignore
-      css({
-        // output: devCssPath
-        // output: './xxx.css'
-        output:(styles,styleNodes,bundle)=> {
-          
-        }
+      // css({
+      //   // output: devCssPath
+      //   // output: './xxx.css'
+      //   output:async (styles,styleNodes,bundle)=> {
+      //     console.log('styleNodes: ', styleNodes);
+      //     // console.log("@@@");
+      //     // await fsVol.promises.writeFile('virtual.css',styles,{'encoding':'utf-8'})
+      //     // const content = await fsVol.promises.readFile('virtual.css',{encoding:'utf-8'})
+      //     // console.log('content: ', content);
+      //     // console.log("@@@@");
+      //     import()
+      //   }
+      // }),
+      
+      vue({
+        preprocessStyles: true
       }),
-      vuePlugin(),
+      postcss({
+        inject: true
+      }),
       nodeResolve(),
       commonjs(),
       esbuild({

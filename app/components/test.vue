@@ -7,4 +7,10 @@
 
 <script lang="ts" setup>
 import SvgIcon from '@/components/SvgIcon.vue';
+import '@/components/xxxx.css'
 </script>
+<style>
+.xxx{
+  color: wheat;
+}
+</style>
