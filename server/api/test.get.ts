@@ -2,8 +2,7 @@ import { createRollupInstance, fsVol } from "@@/instance";
 import { createFsFromVolume, Volume } from "memfs";
 import fs from "fs";
 import { rollup } from "rollup";
-import { appRoot, devCssDir, devCssPath, projectRoot } from "@@/utils";
-import vuePlugin from "@vitejs/plugin-vue";
+import { appComponents, appRoot, devCssDir, devCssPath, projectRoot } from "@@/utils";
 import esbuild from "rollup-plugin-esbuild";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 import path from "path";
@@ -17,7 +16,7 @@ const require = createRequire(import.meta.url);
 const postcss = require("rollup-plugin-postcss");
 
 import nodeResolve from "@rollup/plugin-node-resolve";
-import css from "rollup-plugin-css-only";
+import { readAllFilesAsync } from "~~/utils/file/file";
 
 export default defineEventHandler(async (event) => {
   const str = `\
@@ -57,9 +56,15 @@ import test from '@/components/test.vue';
 
     },
   };
+  const components =  await readAllFilesAsync(appComponents)
+  const manifestJson:Record<string,{
+    fileName: string,
+    imports: string[],
+    isEntry: boolean
+  }> = JSON.parse(fs.readFileSync('dist/manifest.json',{encoding:'utf-8'})) 
 
   const bundle = await rollup({
-    input: ["@/components/test.vue","virtual.vue"],
+    input: [...components,"virtual.vue"],
     // input: ["@/client/pages/home.vue"],
     //@ts-ignore
     fs: myfs.promises,
@@ -67,10 +72,24 @@ import test from '@/components/test.vue';
     plugins: [
       {
         name: "virtual-component-plugin",
-        resolveId(source) {
+        resolveId(source,importer,options) {
           console.log("source: ", source);
+          if(source.startsWith('.')){
+            let newPath =''
+            if(importer) newPath = path.resolve(path.dirname(importer),source)
+            return newPath
+          }
+          
+          
           if (source.startsWith("@/")) {
             return source.replace("@/", appRoot + "\\").replaceAll("\\", "/");
+          }
+          if(Object.keys(manifestJson).includes(source)){
+            const xpath = path.resolve(projectRoot,'dist',manifestJson[source].fileName).replaceAll('\\','/')
+            console.log('projectRoot: ', projectRoot);
+            console.log('xpath: ', xpath);
+   
+            return path.resolve(projectRoot,'dist',manifestJson[source].fileName).replaceAll('\\','/')
           }
           return source;
         },
@@ -86,7 +105,9 @@ import test from '@/components/test.vue';
       postcss({
         inject: true,
       }),
-      nodeResolve(),
+      nodeResolve({
+        extensions:['.js','.ts','.vue']
+      }),
       commonjs(),
       esbuild({
         // sourceMap: true,
@@ -103,19 +124,39 @@ import test from '@/components/test.vue';
       }),
     ],
   });
-  const { output } = await bundle.write({ 
-    format: "esm",
-    dir: 'dist',
-    entryFileNames: 'js/[name]-[hash].js',   // 入口文件
-    chunkFileNames: 'js/[name]-[hash].js',   // 代码分割后的 chunk
-    assetFileNames: ({ name }) => {
-      if (/\.(css)$/.test(name ?? '')) {
-        return 'css/[name]-[hash][extname]'; // 样式文件
-      }
-      return 'assets/[name]-[hash][extname]'; // 其他资源
-    }
-   });
-  console.log("output: ", output[0].code);
+  const { output } = await bundle.generate({format:'esm'})
 
+
+  // const { output } = await bundle.write({ 
+  //   format: "esm",
+  //   dir: 'dist',
+  //   entryFileNames: 'entry/[name]-[hash].js',   // 入口文件
+  //   chunkFileNames: 'chunk/[name]-[hash].js',   // 代码分割后的 chunk
+  //   assetFileNames: 'assets/[name]-[hash][extname]',
+  // })
+
+  // // 生成映射
+  // const manifest:Record<string,any> = {};
+  // for (const chunkOrAsset of output) {
+  //   if (chunkOrAsset.type === 'chunk') {
+  //     if(!chunkOrAsset.facadeModuleId) continue
+  //     const fileNmae = chunkOrAsset.facadeModuleId.replaceAll('\\','/')
+  //     manifest[fileNmae] = {
+  //       fileName: chunkOrAsset.fileName,
+  //       imports: chunkOrAsset.imports,     // 引入的 chunk
+  //       isEntry: chunkOrAsset.isEntry,
+  //     };
+  //   } else if (chunkOrAsset.type === 'asset') {
+  //     // @ts-ignore
+  //     manifest[chunkOrAsset.name] = {
+  //       fileName: chunkOrAsset.fileName,
+  //       source: chunkOrAsset.source,
+  //     };
+  //   }
+  // }
+
+  // fs.writeFileSync('dist/manifest.json', JSON.stringify(manifest, null, 2));
+
+  console.log("output: ",output[0].code);
   return "";
 });
