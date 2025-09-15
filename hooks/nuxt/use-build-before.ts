@@ -1,7 +1,6 @@
 import { copySync } from "fs-extra";
 import { NuxtHooks } from "nuxt/schema";
 import { baseTsConfigPath, devBaseTsConfigPath, devDocsRoot, docsRoot, outputDocsRoot } from "../../utils";
-import { fsVol } from "../../instance";
 
 export const useBuildBefore: NuxtHooks["build:before"] = () => {
   // copy docs to .nuxt/docs
