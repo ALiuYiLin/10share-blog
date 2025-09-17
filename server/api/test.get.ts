@@ -1,4 +1,4 @@
-import { createRollupInstance, fsVol } from "@@/instance";
+import { compile, createRollupInstance, fsVol } from "@@/instance";
 
 
 export default defineEventHandler(async (event) => {
@@ -22,11 +22,6 @@ h1{
   // await fsVol.promises.writeFile('@virtual/virtual.vue',str,{encoding:'utf-8'})
   const input = ['virtual.vue']
   await fsVol.promises.writeFile('virtual.vue',str,{encoding:'utf-8'})
-  const rollup = (await createRollupInstance()).build(input)
-  const bundle = (await rollup)
 
-  
-  const { output } = await bundle.generate({format:'esm'})
-
-  return output[0].code;
+  return await compile(input);
 });
