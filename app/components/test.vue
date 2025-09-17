@@ -1,16 +1,14 @@
 <template>
   <div>
     <h1>test2</h1>
-    <SvgIcon name="more"></SvgIcon>
+    <Button></Button>
   </div>
 </template>
-
 <script lang="ts" setup>
-import SvgIcon from '@/components/SvgIcon.vue';
-import '@/components/xxxx.css'
+import Button from './Button.vue';
 </script>
-<style>
-.xxx{
+<style scoped>
+h1{
   color: wheat;
 }
 </style>

@@ -1,8 +1,13 @@
 import { InputOption, rollup } from "rollup";
-import { appComponents, projectRoot, virtualAndRealFs } from "../../utils";
-import vuePlugin from "@vitejs/plugin-vue";
+import { appRoot,virtualAndRealFs } from "../../utils";
+import vue from "rollup-plugin-vue";
 import esbuild from "rollup-plugin-esbuild";
-import alias from '@rollup/plugin-alias';
+import { createRequire } from "module";
+import path from "path";
+
+const require = createRequire(import.meta.url);
+const postcss = require("rollup-plugin-postcss");
+
 
 export const createRollupInstance = async () => {
   function build(input:InputOption) {
@@ -14,14 +19,24 @@ export const createRollupInstance = async () => {
       external: ['vue'],
 
       plugins:[
-        alias({
-          entries:[
-            {
-              find:'@/components',replacement:appComponents
-            }
-          ]
+        {
+          name:'path-resolve-plugin',
+          resolveId(source, importer, options) {
+              if(source.startsWith('.')){
+                if(importer) return path.resolve(path.dirname(importer),source)
+              }
+              if(source.startsWith("@/")){
+                return source.replace("@/",appRoot+'/')
+              }
+              return source
+          },
+        },
+        vue({
+          preprocessStyles: true,
         }),
-        vuePlugin(),
+        postcss({
+          inject: true,
+        }),
         esbuild({
           // sourceMap: true,
           logLevel: "verbose",

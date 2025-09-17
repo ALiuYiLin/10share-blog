@@ -6,8 +6,7 @@ import { nuxtHooks } from "./hooks";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  hooks: nuxtHooks,
-  
+  hooks: nuxtHooks, 
   app: {
     head: {
       script: [
