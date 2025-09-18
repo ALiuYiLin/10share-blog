@@ -1,8 +1,14 @@
 interface StyleInjectOptions {
   insertAt?: 'top' | 'bottom'
 }
-
 export function styleInject(css: string, ref: StyleInjectOptions = {}): void {
+
+
+  const nodes = document.head.querySelectorAll("style[virtual]");
+  nodes.forEach(node=>{
+    node.parentNode?.removeChild(node)
+  })
+
   const insertAt = ref.insertAt
 
   if (!css || typeof document === 'undefined') return
@@ -10,6 +16,7 @@ export function styleInject(css: string, ref: StyleInjectOptions = {}): void {
   const head = document.head || document.getElementsByTagName('head')[0]
   const style = document.createElement('style')
   style.type = 'text/css'
+  style.setAttribute('virtual','')
 
   if (insertAt === 'top') {
     if (head.firstChild) {

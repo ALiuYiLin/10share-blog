@@ -1,4 +1,4 @@
-import { compile, createRollupInstance, fsVol } from "@@/instance";
+import { compile, fsVol } from "@@/instance";
 
 
 export default defineEventHandler(async (event) => {

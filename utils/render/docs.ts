@@ -1,8 +1,9 @@
-import { compile, createMarkdownInstance,fsVol } from "@@/instance";
-import { MarkdownSfcBlocks } from "@mdit-vue/plugin-sfc";
+
 import fs from 'fs'
-import path from "path";
-import { docsRoot } from "~~/utils";
+import path from 'path';
+import { docsRoot } from '../file';
+import { compile, createMarkdownInstance, fsVol } from '../../instance';
+import { MarkdownSfcBlocks } from '~~/shared';
 
 function getVueSrc(sfcBlocks:MarkdownSfcBlocks,html:string){
   const vueSrc = [
@@ -13,8 +14,9 @@ function getVueSrc(sfcBlocks:MarkdownSfcBlocks,html:string){
     ].join('\n')
   return vueSrc
 }
-async function getDocsCodeAndCss(docsPath:string){
-  const fileString = fs.readFileSync(path.resolve(docsRoot,docsPath),'utf-8')
+
+export async function getDocsCodeAndCss(docsPath:string){
+  const fileString = fs.readFileSync(path.resolve(docsRoot,docsPath+'.md'),'utf-8')
   const md = await createMarkdownInstance();
   const env = {} as {sfcBlocks:MarkdownSfcBlocks}
   const html = await md.renderAsync(fileString,env)
@@ -24,8 +26,3 @@ async function getDocsCodeAndCss(docsPath:string){
   const input = ['virtual.vue']  
   return await compile(input)
 }
-
-export default defineEventHandler(async (event) => {
-  const docsPath = 'example/vue.md'
-  return getDocsCodeAndCss(docsPath)
-});

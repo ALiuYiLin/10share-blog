@@ -5,6 +5,7 @@
         <p @click="loadBlogContent(blogPath)">{{ blogPath }}</p>
       </li>
     </ul>
+    <div ref="10share-docs"></div>
   </div>
 </template>
 
@@ -14,22 +15,10 @@ import'~/assets/css/vp-doc.css'
 import'~/assets/css/vp-code.css'
 import'~/assets/css/custom-block.css'
 const blogPaths = ref<string[] | null>(null)
+const el = useTemplateRef('10share-docs')
 async function loadBlogContent(blogPath:string) {
-  let html:string = ''
-  try {
-    html = await $fetch<string>(`/api/render/?path=${blogPath}`, {method: 'get'})
-  } catch (error) {
-    console.log('error: ', error);
-  }
-  const id = '10share-blog'
-  let container = document.getElementById(id)
-  if(!container){
-    container = document.createElement('div')
-    container.className = 'vp-doc'
-    container.id = '10share-blog'
-    document.getElementById('blog-page')?.appendChild(container)
-  }
-  container.innerHTML = html
+  let {code ,cssString} = await $fetch<{code:string,cssString:string}>(`/api/render/?path=${blogPath}`, {method: 'get'})
+  componentMount(el.value!,code,cssString)
 }
 
 

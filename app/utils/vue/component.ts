@@ -14,6 +14,7 @@ export async function componentMount(el:HTMLElement,code:string,cssString:string
 
   WithScoped(vNode)
 
+  el.innerHTML = ''
   el.appendChild(container)
   styleInject(cssString)
 }

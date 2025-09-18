@@ -1,13 +1,11 @@
 import { InputOption, rollup } from "rollup";
 import { appRoot, virtualAndRealFs } from "../../utils";
-import vue from "rollup-plugin-vue";
 import vuePlugin from "@vitejs/plugin-vue";
 import esbuild from "rollup-plugin-esbuild";
 import { createRequire } from "module";
 import path from "path";
-import { compileStyleAsync, parse } from "vue/compiler-sfc";
-import { inject } from "vue";
-import { fsVol } from "../virtual-file";
+import prefixer from 'postcss-prefix-selector';
+
 const require = createRequire(import.meta.url);
 const postcss = require("rollup-plugin-postcss");
 
@@ -26,72 +24,6 @@ function parseVueRequest(id: string) {
     scopedId,
   };
 }
-
-export const createRollupInstance = async () => {
-  function build(input: InputOption) {
-    const cssArr: string[] = [];
-    return rollup({
-      input,
-      // @ts-ignore
-      fs: virtualAndRealFs.promises,
-
-      external: ["vue"],
-
-      plugins: [
-        {
-          name: "path-resolve-plugin",
-          resolveId(source, importer, options) {
-            if (source.startsWith(".")) {
-              if (importer) return path.resolve(path.dirname(importer), source);
-            }
-            if (source.startsWith("@/")) {
-              return source.replace("@/", appRoot + "/");
-            }
-            return source;
-          },
-          async load(id) {
-            if (id.includes("scoped=")) {
-              const source = await this.fs.readFile(id.split("?")[0], {
-                encoding: "utf8",
-              });
-              const { filename, query, scopedId } = parseVueRequest(id);
-              const { descriptor, errors } = parse(source);
-              const res = await compileStyleAsync({
-                id: `data-v-${scopedId}`,
-                source: descriptor.styles[query.index].content,
-                filename: filename,
-                scoped: true,
-              });
-              cssArr.push(res.code);
-              // console.log('res: ', res);
-              return undefined;
-            }
-            return undefined;
-          },
-        },
-        vuePlugin(),
-        // vue({
-        //   preprocessStyles: true,
-        // }),
-        postcss({
-          inject: true
-        }),
-        esbuild({
-          // sourceMap: true,
-          logLevel: "verbose",
-          target: "es2022",
-          loaders: {
-            ".vue": "ts",
-          },
-        }),
-      ],
-    });
-  }
-
-  return {
-    build,
-  };
-};
 
 export async function compile(input: InputOption) {
   const cssArr: string[] = [];
@@ -114,51 +46,26 @@ export async function compile(input: InputOption) {
           }
           return source;
         },
-        async load(id) {
-          // console.log('id: ', id);
-          // if (id.includes("scoped=")) {
-          //   const source = await this.fs.readFile(id.split("?")[0], {
-          //     encoding: "utf8",
-          //   });
-          //   const { filename, query, scopedId } = parseVueRequest(id);
-          //   const { descriptor, errors } = parse(source);
-          //   const res = await compileStyleAsync({
-          //     id: `data-v-${scopedId}`,
-          //     source: descriptor.styles[query.index].content,
-          //     filename: filename,
-          //     scoped: true,
-          //   });
-          //   cssArr.push(res.code);
-          //   // console.log('res: ', res);
-          //   return undefined;
-          // }
-          // return undefined;
-        },
       },
       vuePlugin(),
-      // vue({
-      //   preprocessStyles: true,
-      // }),
       postcss({
         inject: false,
+        plugins: [
+          prefixer({
+            prefix: '.vp-doc'
+          })
+        ]
       }),
       {
         name: "log-css",
         transform(code, id) {
           if(id.endsWith('lang.css')){
               const match = code.match(/export\s+var\s+stylesheet\s*=\s*"([^"]*)"/);
-              if (match) {
-                // const styleStr = JSON.parse(`"${match[1]}"`)
-                cssArr.push(JSON.parse(`"${match[1]}"`))
-                // return JSON.parse(`"${match[1]}"`);
-              }
+              if (match) cssArr.push(JSON.parse(`"${match[1]}"`))
           }
-            
         }
       },
       esbuild({
-        // sourceMap: true,
-        logLevel: "verbose",
         target: "es2022",
         loaders: {
           ".vue": "ts",
