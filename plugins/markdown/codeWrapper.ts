@@ -17,7 +17,7 @@ export function codeWrapperPlugin(md: MarkdownIt, options: Options) {
 
     const lang = extractLang(token.info);
     return (
-      `<div class="language-${lang}${getAdaptiveThemeMarker(
+      `<div v-pre class="language-${lang}${getAdaptiveThemeMarker(
         options
       )}${active}">` +
       `<button title="${options.codeCopyButtonTitle}" class="copy"></button>` +

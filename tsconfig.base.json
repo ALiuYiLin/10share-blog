@@ -96,7 +96,7 @@
     "lib": [
       "esnext",
       "webworker",
-      "dom.iterable"
+      "dom.iterable",
     ]
   },
   "include": [

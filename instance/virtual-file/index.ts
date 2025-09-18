@@ -1,7 +1,19 @@
-import { createFsFromVolume, Volume } from "memfs";
-const str = ""
-const vol = Volume.fromJSON({
-  "virtual.vue":str
-})
+import { createFsFromVolume, IFs, Volume } from "memfs";
 
-export const fsVol = createFsFromVolume(vol)
+const vol = Volume.fromJSON({
+    "virtual.vue": "",
+  });
+
+
+export const fsVol = (function(){
+  let instance: IFs;
+  return {
+    getInstance: function(){
+      if(!instance) {
+        instance = createFsFromVolume(vol)
+        console.log("new instance");
+      }
+      return instance
+    }
+  }
+})();

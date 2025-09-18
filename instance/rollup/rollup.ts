@@ -7,6 +7,7 @@ import { createRequire } from "module";
 import path from "path";
 import { compileStyleAsync, parse } from "vue/compiler-sfc";
 import { inject } from "vue";
+import { fsVol } from "../virtual-file";
 const require = createRequire(import.meta.url);
 const postcss = require("rollup-plugin-postcss");
 
@@ -40,7 +41,6 @@ export const createRollupInstance = async () => {
         {
           name: "path-resolve-plugin",
           resolveId(source, importer, options) {
-            console.log("source: ", source);
             if (source.startsWith(".")) {
               if (importer) return path.resolve(path.dirname(importer), source);
             }
@@ -95,7 +95,6 @@ export const createRollupInstance = async () => {
 
 export async function compile(input: InputOption) {
   const cssArr: string[] = [];
-
   const bundle = await rollup({
     input,
     // @ts-ignore
@@ -107,7 +106,6 @@ export async function compile(input: InputOption) {
       {
         name: "path-resolve-plugin",
         resolveId(source, importer, options) {
-          console.log("source: ", source);
           if (source.startsWith(".")) {
             if (importer) return path.resolve(path.dirname(importer), source);
           }
@@ -117,23 +115,24 @@ export async function compile(input: InputOption) {
           return source;
         },
         async load(id) {
-          if (id.includes("scoped=")) {
-            const source = await this.fs.readFile(id.split("?")[0], {
-              encoding: "utf8",
-            });
-            const { filename, query, scopedId } = parseVueRequest(id);
-            const { descriptor, errors } = parse(source);
-            const res = await compileStyleAsync({
-              id: `data-v-${scopedId}`,
-              source: descriptor.styles[query.index].content,
-              filename: filename,
-              scoped: true,
-            });
-            cssArr.push(res.code);
-            // console.log('res: ', res);
-            return undefined;
-          }
-          return undefined;
+          // console.log('id: ', id);
+          // if (id.includes("scoped=")) {
+          //   const source = await this.fs.readFile(id.split("?")[0], {
+          //     encoding: "utf8",
+          //   });
+          //   const { filename, query, scopedId } = parseVueRequest(id);
+          //   const { descriptor, errors } = parse(source);
+          //   const res = await compileStyleAsync({
+          //     id: `data-v-${scopedId}`,
+          //     source: descriptor.styles[query.index].content,
+          //     filename: filename,
+          //     scoped: true,
+          //   });
+          //   cssArr.push(res.code);
+          //   // console.log('res: ', res);
+          //   return undefined;
+          // }
+          // return undefined;
         },
       },
       vuePlugin(),
@@ -141,8 +140,22 @@ export async function compile(input: InputOption) {
       //   preprocessStyles: true,
       // }),
       postcss({
-        inject: false
+        inject: false,
       }),
+      {
+        name: "log-css",
+        transform(code, id) {
+          if(id.endsWith('lang.css')){
+              const match = code.match(/export\s+var\s+stylesheet\s*=\s*"([^"]*)"/);
+              if (match) {
+                // const styleStr = JSON.parse(`"${match[1]}"`)
+                cssArr.push(JSON.parse(`"${match[1]}"`))
+                // return JSON.parse(`"${match[1]}"`);
+              }
+          }
+            
+        }
+      },
       esbuild({
         // sourceMap: true,
         logLevel: "verbose",
