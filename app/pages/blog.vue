@@ -14,6 +14,7 @@
 import'~/assets/css/vp-doc.css'
 import'~/assets/css/vp-code.css'
 import'~/assets/css/custom-block.css'
+import path from 'path'
 const blogPaths = ref<string[] | null>(null)
 const el = useTemplateRef('10share-docs')
 async function loadBlogContent(blogPath:string) {
@@ -30,6 +31,12 @@ onMounted(async ()=>{
     console.log('error: ', error);
   }
 })
+if(import.meta.hot){
+  import.meta.hot.on('md:hrm',(p)=>{
+    console.log("发生热重载");
+    loadBlogContent('example/vue')
+  })
+}
 </script>
 
 <style scoped>

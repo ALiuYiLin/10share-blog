@@ -2,6 +2,7 @@
 import path from "path";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 import { nuxtHooks } from "./hooks";
+import { projectRoot } from "./utils";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -38,6 +39,20 @@ export default defineNuxtConfig({
         iconDirs: [path.resolve(__dirname, "app/assets/icons")],
         symbolId: "icon-[dir]-[name]",
       }),
+      {
+        name:'md-hrm',
+        configureServer(server){
+          server.watcher.add(path.resolve(projectRoot,"docs/example/vue.md"))
+          server.watcher.on('change',(file)=>{
+            console.log(`[md-hmr] ${file} changed, reloading...`)
+            server.ws.send({
+              type:'custom',
+              event:'md:hrm',
+            })
+
+          })
+        }
+      }
     ],
   },
 });

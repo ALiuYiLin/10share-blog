@@ -41,7 +41,7 @@ function editorClick() {
   ></div>
 </template>
 
-<style>
+<style scoped>
 .md-editor-wrapper {
   width: 800px;
   min-height: 600px;
