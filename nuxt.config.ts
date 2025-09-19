@@ -2,7 +2,8 @@
 import path from "path";
 import { createSvgIconsPlugin } from "vite-plugin-svg-icons";
 import { nuxtHooks } from "./hooks";
-import { projectRoot } from "./utils";
+import { docsRoot, projectRoot } from "./utils";
+import { glob } from "fs";
 
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
@@ -42,14 +43,23 @@ export default defineNuxtConfig({
       {
         name:'md-hrm',
         configureServer(server){
-          server.watcher.add(path.resolve(projectRoot,"docs/example/vue.md"))
-          server.watcher.on('change',(file)=>{
-            console.log(`[md-hmr] ${file} changed, reloading...`)
-            server.ws.send({
-              type:'custom',
-              event:'md:hrm',
+          glob(path.resolve(projectRoot,"docs/**/*.md"),(err,files)=>{
+            if(err) return
+            files.forEach((file)=>{
+              server.watcher.add(file)
             })
-
+            server.watcher.on('change',(file)=>{
+              if(file.endsWith('.md')){
+                console.log(`[md-hmr] ${file} changed, reloading...`)
+                server.ws.send({
+                  type:'custom',
+                  event:'md:hrm',
+                  data: {
+                    path: path.relative(docsRoot,file).replace('.md','')
+                  }
+                })
+              }
+            })
           })
         }
       }

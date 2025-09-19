@@ -14,10 +14,11 @@
 import'~/assets/css/vp-doc.css'
 import'~/assets/css/vp-code.css'
 import'~/assets/css/custom-block.css'
-import path from 'path'
 const blogPaths = ref<string[] | null>(null)
+const selectedPath = ref('')
 const el = useTemplateRef('10share-docs')
 async function loadBlogContent(blogPath:string) {
+  selectedPath.value = blogPath
   let {code ,cssString} = await $fetch<{code:string,cssString:string}>(`/api/render/?path=${blogPath}`, {method: 'get'})
   componentMount(el.value!,code,cssString)
 }
@@ -26,15 +27,14 @@ async function loadBlogContent(blogPath:string) {
 onMounted(async ()=>{
   try{
    blogPaths.value = await $fetch<string[]>('/api/blogs') 
-   console.log('blogPaths.value: ', blogPaths.value);
   }catch(error){
     console.log('error: ', error);
   }
 })
 if(import.meta.hot){
-  import.meta.hot.on('md:hrm',(p)=>{
-    console.log("发生热重载");
-    loadBlogContent('example/vue')
+  import.meta.hot.on('md:hrm',(p:{path:string})=>{
+    console.log("发生热重载",p.path);
+    if(selectedPath.value != '') loadBlogContent(p.path)
   })
 }
 </script>
