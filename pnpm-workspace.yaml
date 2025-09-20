@@ -1,5 +1,0 @@
-packages:
-  - '**/*'
-
-overrides:
-  '@vitejs/test-dep-import-type': link:../../Users/Administrator/AppData/Local/pnpm/global/5/node_modules/@vitejs/test-dep-import-type
