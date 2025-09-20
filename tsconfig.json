@@ -9,9 +9,9 @@
     "skipLibCheck": true,  
     "allowJs": true,
     "baseUrl": "./",                               /* Skip type checking all .d.ts files. */
-    "rootDir": "./src",
     "paths": {
-      "@/*":["src/*"]
+      "@/*":["src/*"],
+      "#/*":["server/*"]
     }
   },
   "include": [
@@ -19,5 +19,6 @@
     "src/**/*.vue",
     "src/**/*.js",
     "src/**/*.d.ts",
+    "server"
   ]
 }

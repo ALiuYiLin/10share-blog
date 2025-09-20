@@ -35,8 +35,8 @@ export interface Api {
 export type ApiHandlerContext= {
   context: Record<string,any>;
 };
+
 export type ApiHandler  = (
-  this:ApiHandlerContext,
   req: Request, 
   res: Response, 
   next: NextFunction

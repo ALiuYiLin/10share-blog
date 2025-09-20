@@ -9,9 +9,9 @@
     "build:client": "vite build --ssrManifest .vite/ssr-manifest.json --outDir dist/client",
     "build:entry:server": "vite build --ssr src/entry-server.ts --outDir dist/server",
     "build:server": "tsc --project tsconfig.server.json && tsc-alias -p tsconfig.server.json",
-    "dev": "set NODE_ENV=development && tsx server.ts ",
-    "serve": "set NODE_ENV=production && tsx server",
-    "start": "set NODE_ENV=production && node dist/server.js"
+    "dev": "set NODE_ENV=development && tsx index.ts ",
+    "serve": "set NODE_ENV=production && tsx index",
+    "start": "set NODE_ENV=production && node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -34,6 +34,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/compiler-dom": "^3.5.21",
     "@vue/compiler-sfc": "^3.5.21",
+    "chokidar": "^4.0.3",
     "compression": "^1.8.1",
     "express": "^5.1.0",
     "glob": "^11.0.3",
@@ -47,6 +48,7 @@
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
-    "vite": "^7.1.4"
+    "vite": "^7.1.4",
+    "vite-node": "^3.2.4"
   }
 }

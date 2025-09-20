@@ -10,7 +10,3 @@ export const getUsers:Api = {
     return [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }];
   },
 };
-
-export const asb = ()=>{
-  console.log("saaa");
-}

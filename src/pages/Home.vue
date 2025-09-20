@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import MyTitle from '../components/MyTitle.vue';
+import MyTitle from '@/components/MyTitle.vue';
 
 
 </script>
