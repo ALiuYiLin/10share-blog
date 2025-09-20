@@ -1,13 +1,19 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import fs from 'fs'
-import express from 'express'
+import express , { Express }from 'express'
+import { Api, wrapApi } from "./server/utils";
+import { ViteDevServer } from "vite";
+
 
 export async function createServer(
   root: string = process.cwd(),
   isProd: boolean = process.env.NODE_ENV?.trim() === 'production',
   hrmPort?: number
-){
+): Promise<{
+    app: Express;
+    vite: ViteDevServer | undefined;
+}>{
   const __dirname = path.dirname(fileURLToPath(import.meta.url))
   console.log('isProd: ', isProd);
 
@@ -57,10 +63,25 @@ export async function createServer(
     )
   }
 
+  function isApi(v: any): v is Api {
+    return v && typeof v === "object" && "path" in v && "method" in v && "apiHandler" in v
+  }
+
+  const APIS = await import("./server/api/index.js")
+
+  const exportedApis = Object.entries(APIS).filter(([_,v])=>isApi(v)).map(([_,v])=>v) as Api[]
+  
+  exportedApis.forEach(api=>{
+    (app as any)[api.method](api.path,wrapApi(api.apiHandler))
+    console.log(`注册接口: [${api.method.toUpperCase()}] ${api.path}`);
+  })
+
+  
 
   app.use('*all', async(req, res) =>{
     try{
       const url = req.originalUrl
+      console.log('url: ', url);
       let template, render
       if(!isProd){
         // dev

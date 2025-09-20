@@ -4,11 +4,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "tsx build/server",
     "build": "npm run build:client && npm run build:entry:server && npm run build:server",
     "build:client": "vite build --ssrManifest .vite/ssr-manifest.json --outDir dist/client",
     "build:entry:server": "vite build --ssr src/entry-server.ts --outDir dist/server",
-    "build:server":"tsc server.ts --moduleResolution node  --esModuleInterop true --skipLibCheck true --module ESNext --outDir ./dist",
+    "build:server": "tsc --project tsconfig.server.json && tsc-alias -p tsconfig.server.json",
     "dev": "set NODE_ENV=development && tsx server.ts ",
     "serve": "set NODE_ENV=production && tsx server",
     "start": "set NODE_ENV=production && node dist/server.js"
@@ -24,6 +24,7 @@
   "devDependencies": {
     "@rollup/browser": "^4.50.1",
     "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.4",
     "@types/compression": "^1.8.1",
@@ -43,6 +44,7 @@
     "rollup-plugin-vue": "^6.0.0",
     "serve-static": "^2.2.0",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.16",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vite": "^7.1.4"
