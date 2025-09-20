@@ -70,9 +70,9 @@ export async function createServer(
   const APIS = await import("./server/api/index.js")
 
   const exportedApis = Object.entries(APIS).filter(([_,v])=>isApi(v)).map(([_,v])=>v) as Api[]
-  
+
   exportedApis.forEach(api=>{
-    (app as any)[api.method](api.path,wrapApi(api.apiHandler))
+    (app as any)[api.method](api.path,wrapApi(api.apiHandler,{context:{manifest}}))
     console.log(`注册接口: [${api.method.toUpperCase()}] ${api.path}`);
   })
 

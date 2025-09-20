@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 
 export function wrapApi(
-  apiHandler: (req: Request, res: Response, next: NextFunction) => any | Promise<any>
+  apiHandler: ApiHandler,
+  context?:ApiHandlerContext
 ) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const data = await apiHandler(req, res, next);
+      const bandApiHandler = apiHandler.bind(context!)
+      const data = await bandApiHandler(req, res, next);
       // 如果 fn 自己已经返回响应，就不再包裹
       if (res.headersSent) return;
 
@@ -27,5 +29,15 @@ export function wrapApi(
 export interface Api {
   path: string,
   method: string,
-  apiHandler: (req: Request, res: Response, next: NextFunction) => any | Promise<any>
+  apiHandler: ApiHandler
 }
+
+export type ApiHandlerContext= {
+  context: Record<string,any>;
+};
+export type ApiHandler  = (
+  this:ApiHandlerContext,
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+) => any | Promise<any>
