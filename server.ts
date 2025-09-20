@@ -15,13 +15,13 @@ export async function createServer(
 
   const indexProd = isProd 
   ? fs.readFileSync(
-    resolve('dist/client/index.html'),'utf-8')
+    resolve('./client/index.html'),'utf-8')
   : ''
 
   const manifest = isProd
   ? JSON.parse(
     fs.readFileSync(
-      resolve('dist/client/.vite/ssr-manifest.json'),'utf-8')
+      resolve('./client/.vite/ssr-manifest.json'),'utf-8')
   )
   : ''  
 
@@ -51,7 +51,7 @@ export async function createServer(
   } else {
     app.use((await import('compression')).default())
     app.use(
-      (await import('serve-static')).default(resolve('dist/client'),{
+      (await import('serve-static')).default(resolve('./client'),{
         index: false
       })
     )
@@ -72,7 +72,8 @@ export async function createServer(
       }else {
         // prod
         template = indexProd
-        render = (await import('./dist/server/entry-server')).render
+        // @ts-ignore
+        render = (await import('./server/entry-server.js')).render
       }
       const [appHtml, preloadLinks] = await render(url, manifest)
 
