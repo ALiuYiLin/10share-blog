@@ -1,156 +1,202 @@
 import path from "path";
 import { fileURLToPath } from "url";
-import fs, { copyFile } from "fs";
+import fs from "fs";
 import express, { Express } from "express";
-import { Api, wrapApi } from "./server/utils/index.js";
-import { ViteDevServer } from "vite";
-import { PROJECT_ROOT } from "./server/utils/file.js";
-import chokidar from 'chokidar';
-
-const modulePath = new URL('./server/api/docs.ts', import.meta.url).pathname;
+import { Api, wrapApi } from "./server/utils";
+import { InlineConfig, ResolvedConfig, ViteDevServer } from "vite";
 
 
 
-
-
-
-export async function createServer(
-  root: string = process.cwd(),
-  isProd: boolean = process.env.NODE_ENV?.trim() === "production",
-  hrmPort?: number
-): Promise<{
-  app: Express;
-  vite: ViteDevServer | undefined;
-}> {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-  const resolve = (p: string) => path.resolve(__dirname, p);
-
-  const indexProd = isProd
-    ? fs.readFileSync(resolve("./client/index.html"), "utf-8")
-    : "";
-
-  const manifest = isProd
-    ? JSON.parse(
-        fs.readFileSync(resolve("./client/.vite/ssr-manifest.json"), "utf-8")
-      )
-    : "";
-
-  const app = express();
-
-  let vite;
-
-  if (!isProd) {
-    vite = await (
-      await import("vite")
-    ).createServer({
-      root,
-      logLevel: "info",
-      server: {
-        middlewareMode: true,
-        watch: {
-          usePolling: true,
-          interval: 100,
-        },
-        hmr: {
-          port: hrmPort,
-        },
+const viteServerOptions = (root: string, hrmPort?: number) => {
+  return {
+    root,
+    logLevel: "info",
+    server: {
+      middlewareMode: true,
+      watch: {
+        usePolling: true,
+        interval: 100,
       },
-      appType: "custom",
-    });
+      hmr: {
+        port: hrmPort,
+      },
+    },
+    appType: "custom",
+  } as InlineConfig | ResolvedConfig;
+};
 
-    app.use(vite.middlewares);
-    // vite.ws.send({type:'full-reload'})
-  } else {
-    app.use((await import("compression")).default());
-    app.use(
+
+function isApi(v: any): v is Api {
+  return (
+    v &&
+    typeof v === "object" &&
+    "path" in v &&
+    "method" in v &&
+    "apiHandler" in v
+  );
+}
+
+type HookName = "app:init" | "app:created" | "app:destroy" | "vite:create" | "index:register";
+type HookFn<T extends any[] = any[], R = void> = (...args: T) => R | Promise<R>;
+
+interface WebServerConfig {
+  hooks?: Partial<Record<HookName, HookFn[]>>;
+}
+
+interface WebServerHooks {
+  "index:register": ((msg:string) => void)[]
+  "vite:create":((vite:ViteDevServer)=>void)[]
+}
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const resolve = (p: string) => path.resolve(__dirname, p);
+
+class WebServer {
+  app: Express | undefined = undefined;
+  port: number = 3000;
+  prod: boolean = process.env.NODE_ENV?.trim() === "production";
+  root: string = process.cwd();
+  vite: ViteDevServer | undefined = undefined;
+  hooks?: Partial<Record<HookName, HookFn[]>> = {};
+  hrmPort?: number;
+
+  constructor(config: WebServerConfig) {
+    this.hooks = config.hooks;
+  }
+
+
+  /**
+   * 调用 hook
+   */
+  private async callHook<T extends any[], R = void>(
+    name: HookName,
+    ...args: T
+  ): Promise<R[]> {
+    const fns = this.hooks![name] || [];
+    const results: R[] = [];
+    for (const fn of fns) {
+      const res = await fn.call(this,...args);
+      results.push(res as R);
+    }
+    return results;
+  }
+
+
+  private async appInit() {
+    //
+    this.app = express();
+    //
+  }
+
+  private async viteCreate() {
+    if (this.prod) return;
+    this.vite = await (
+      await import("vite")
+    ).createServer(viteServerOptions(this.root, this.hrmPort));
+    this.app?.use(this.vite.middlewares);
+    // excute vite create hooks
+  }
+
+  private async assetsRegister(){
+    if(this.prod) return
+    this.app!.use((await import("compression")).default());
+    this.app!.use(
       (await import("serve-static")).default(resolve("./client"), {
         index: false,
       })
     );
   }
 
-  function isApi(v: any): v is Api {
-    return (
-      v &&
-      typeof v === "object" &&
-      "path" in v &&
-      "method" in v &&
-      "apiHandler" in v
-    );
+
+  private async indexRegister() {
+    const indexProd = this.prod
+      ? fs.readFileSync(resolve("./client/index.html"), "utf-8")
+      : "";
+
+    const manifest = this.prod
+      ? JSON.parse(
+          fs.readFileSync(resolve("./client/.vite/ssr-manifest.json"), "utf-8")
+        )
+      : "";
+    
+    const _this = this
+    
+    this.app!["get"]("/", async (req, res, next) => {
+      try {
+        const url = req.originalUrl;
+        let template, render;
+        if (!_this.prod) {
+          // dev
+          template = fs.readFileSync(resolve("index.html"), "utf-8");
+
+          template = await _this.vite!.transformIndexHtml(url, template);
+
+          render = (await _this.vite!.ssrLoadModule("/src/entry-server")).render;
+        } else {
+          // prod
+          template = indexProd;
+          // @ts-ignore
+          render = (await import("./server/entry-server.js")).render;
+        }
+        const [appHtml, preloadLinks] = await render(url, manifest);
+
+        const html = template
+          .replace(`<!--preload-links-->`, preloadLinks)
+          .replace(`<!--app-html-->`, appHtml);
+
+        res.status(200).set({ "Content-Type": "text/html" }).end(html);
+      } catch (e: any) {
+        res.status(500).end(e.stack);
+      }
+    });
+    const msg = 'hello'
+    this.callHook('index:register',msg)
   }
 
-  const APIS = await import("./server/api/index.js");
 
-  const exportedApis = Object.entries(APIS)
-    .filter(([_, v]) => isApi(v))
-    .map(([_, v]) => v) as Api[];
-  console.log("PROJECT_ROOT: ", PROJECT_ROOT);
-  exportedApis.forEach((api) => {
-    (app as any)[api.method](
-      api.path,
-      wrapApi(api.apiHandler, { context: { manifest } })
-    );
-    console.log(`注册接口: [${api.method.toUpperCase()}] ${api.path}`);
-  });
+  private async apiRegister() {
+    const APIS = await import("./server/api/index.js");
+    const exportedApis = Object.entries(APIS)
+      .filter(([_, v]) => isApi(v))
+      .map(([_, v]) => v) as Api[];
+    exportedApis.forEach((api) => {
+      (this.app as any)[api.method](
+        api.path,
+        wrapApi(api.apiHandler, { context: {} })
+      );
+      console.log(`注册接口: [${api.method.toUpperCase()}] ${api.path}`);
+    });
 
-  app.use("*all", async (req, res) => {
-    try {
-      const url = req.originalUrl;
-      console.log("url: ", url);
-      let template, render;
-      if (!isProd) {
-        // dev
-        template = fs.readFileSync(resolve("index.html"), "utf-8");
+  }
 
-        template = await vite!.transformIndexHtml(url, template);
+  private async serverListen() {
+    this.app?.listen(this.port, async () => {
+      console.log(`http://localhost:${this.port}`);
+    });
+  }
 
-        render = (await vite!.ssrLoadModule("/src/entry-server")).render;
-      } else {
-        // prod
-        template = indexProd;
-        // @ts-ignore
-        render = (await import("./server/entry-server.js")).render;
-      }
-      const [appHtml, preloadLinks] = await render(url, manifest);
-
-      const html = template
-        .replace(`<!--preload-links-->`, preloadLinks)
-        .replace(`<!--app-html-->`, appHtml);
-
-      res.status(200).set({ "Content-Type": "text/html" }).end(html);
-    } catch (e: any) {
-      res.status(500).end(e.stack);
-    }
-  });
-
-  return { app, vite };
+  public async run() {
+    await this.appInit();
+    await this.viteCreate();
+    await this.assetsRegister();
+    await this.apiRegister();
+    await this.indexRegister();
+    await this.serverListen();
+  }
 }
 
-createServer().then(({ app }) => {
-  app.listen(5173, async() => {
-    console.log(`http://localhost:5173`);
-    async function loadModule() {
-      // 动态导入模块，每次都会得到最新版本
-      const mod = await import(`${modulePath}?t=${Date.now()}`); // ?t 防缓存
-      return mod;
-    }
-    let mod = await loadModule();
-    function runModule() {
-      if (mod.run) {
-        mod.run()
-      } else if (mod.default) {
-        mod.default()
-      }
-    }
-    runModule()
+function testHook(this:WebServer,msg:string){
+  console.log('after index:register msg: ', msg);
+}
 
-    const watcher = chokidar.watch(modulePath);
-    watcher.on('change', async () => {
-      console.log('module changed, reloading...');
-      mod = await loadModule();
-      runModule()
-    });
-    
+(async () => {
+  const webServer = new WebServer({
+    hooks:{
+      'index:register':[
+        testHook
+      ]
+    } as WebServerHooks
   });
-});
+  await webServer.run();
+})();
