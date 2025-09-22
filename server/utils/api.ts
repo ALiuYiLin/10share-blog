@@ -41,3 +41,14 @@ export type ApiHandler  = (
   res: Response, 
   next: NextFunction
 ) => any | Promise<any>
+
+
+export function isApi(v: any): v is Api {
+  return (
+    v &&
+    typeof v === "object" &&
+    "path" in v &&
+    "method" in v &&
+    "apiHandler" in v
+  );
+}
