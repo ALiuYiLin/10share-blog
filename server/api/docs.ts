@@ -10,13 +10,3 @@ export const getDocs:Api = {
     return files.map(file=>path.relative(DOCS_ROOT,file).replace(".md",""))
   },
 };
-
-export const getXXX:Api = {
-  path: "/xxxxx",
-  method: "get",
-  apiHandler: async () => {    
-    const files = await glob(DOCS_ROOT+'/**/*.md',{absolute:true})
-    console.log("@@@!3424");
-    return files.map(file=>path.relative(DOCS_ROOT,file).replace(".md",""))
-  },
-};

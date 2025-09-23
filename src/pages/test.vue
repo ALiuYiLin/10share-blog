@@ -7,7 +7,7 @@
 import { onMounted } from 'vue';
 
 onMounted(async()=>{
-  fetch('/docs').then((res)=>{
+  fetch('/render').then((res)=>{
     console.log('res: ', res);
   })
 })

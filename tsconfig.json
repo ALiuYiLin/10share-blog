@@ -19,6 +19,7 @@
     "src/**/*.vue",
     "src/**/*.js",
     "src/**/*.d.ts",
-    "server"
+    "server",
+    "shared"
   ]
 }
