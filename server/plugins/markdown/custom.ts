@@ -28,7 +28,7 @@ export function infoPlugin():MarkdwonPlugin{
   return {
     name: "info-msg",
     description: "提示信息",
-    plugin: (md)=>customContainerPlugin,
+    plugin: (md,...params)=>md.use(customContainerPlugin,...params),
     args:['info','INFO']
   }
 }
@@ -38,7 +38,7 @@ export function tipPlugin():MarkdwonPlugin{
   return {
     name: "tip-msg",
     description: "",
-    plugin: (md)=>customContainerPlugin,
+    plugin: (md,...params)=>md.use(customContainerPlugin,...params),
     args:['tip','TIP']
   }
 }
@@ -47,7 +47,7 @@ export function warningPlugin():MarkdwonPlugin{
   return {
     name: "warning-msg",
     description: "警示信息",
-    plugin: (md)=>customContainerPlugin,
+    plugin: (md,...params)=>md.use(customContainerPlugin,...params),
     args:['warning','WARNING']
   }
 }
@@ -56,7 +56,7 @@ export function dangerPlugin():MarkdwonPlugin{
   return {
     name: "danger-msg",
     description: "风险信息",
-    plugin: (md)=>customContainerPlugin,
+     plugin: (md,...params)=>md.use(customContainerPlugin,...params),
     args:['danger','DANGER']
   }
 }
@@ -65,7 +65,7 @@ export function detailsPlugin():MarkdwonPlugin{
   return {
     name: "",
     description: "",
-    plugin: (md)=>customContainerPlugin,
+     plugin: (md,...params)=>md.use(customContainerPlugin,...params),
     args:['details','Details']
   }
 }

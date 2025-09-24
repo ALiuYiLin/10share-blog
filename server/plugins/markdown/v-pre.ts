@@ -15,7 +15,7 @@ export function vPreContainerPlugin(): MarkdwonPlugin {
   return {
     name: 'v-pre-wrapper',
     description: '避免被vue渲染',
-    plugin: (md) => usevPreContainerPlugin,
+    plugin: (md,...params) => md.use(usevPreContainerPlugin,...params),
     args: ['v-pre'],
   }
 }

@@ -32,13 +32,11 @@ const codeCopyButtonTitle = "Copy Code";
 const hasSingleTheme = "";
 
 
-export function codeWrapperPlugin():MarkdwonPlugin{
-  return {
-    name: "code-wrapper",
-    description: "为代码提供显示区域，添加copy按钮",
-    plugin: (md)=>useCodeWrapperPlugin,
-    args:[{ codeCopyButtonTitle, hasSingleTheme }]
-  }
+export const  codeWrapperPlugin :MarkdwonPlugin ={
+  name: "code-wrapper",
+  description: "为代码提供显示区域，添加copy按钮",
+  plugin: (md,...params)=>md.use(useCodeWrapperPlugin,...params),
+  args:[{ codeCopyButtonTitle, hasSingleTheme }]
 }
 
 
