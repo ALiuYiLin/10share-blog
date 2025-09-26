@@ -20,6 +20,11 @@ export const routes:RouteRecordRaw[] = [
     path:'/docs',
     name: 'docs',
     component: ()=> import('./pages/docs.vue')
+  },
+  {
+    path:'/edit',
+    name: 'edit',
+    component: ()=> import('./pages/edit/edit.vue')
   }
 ] as const
 
