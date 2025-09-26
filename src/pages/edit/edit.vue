@@ -56,14 +56,74 @@ function inputChange(e:Event){
 
 }
 function keydown(e:KeyboardEvent){
-  console.log('e:keydown ', e);
+  // console.log('e:keydown ', e);
   if(e.key.length === 1){
+    e.preventDefault()
     const selection = window.getSelection();
     if (!selection) return;
      // 创建新的 Range，把光标移到 span 内
-    const range = document.createRange();
+    putKeyInSpan(e.key)
   }
 
+}
+function getLien(node:HTMLElement){
+  let current: HTMLElement | null = node;
+  while (current) {
+    if (current.classList?.contains('et-line')) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
+function putKeyInSpan(key:string){
+  const selection = window.getSelection();
+  const range = selection?.getRangeAt(0)
+   const startOffset = range!.startOffset;
+   const endOffset = range!.endOffset;
+   const startContainer = range!.startContainer;
+   const endContainer = range!.endContainer;
+   console.log('startContainer: ', startContainer);
+   console.log('endContainer: ', endContainer);
+   console.log('startOffset: ', startOffset);
+   console.log('endOffset: ', endOffset);
+  if (!selection) return;
+  if(!selection.focusNode) return
+  const lineEl = getLien(selection.focusNode as HTMLElement)
+  console.log('lineEl: ', lineEl);
+  if(lineEl && lineEl.classList.contains('et-line')){
+    const spans = lineEl.querySelectorAll('span.content')
+    let selectSpan = null
+    if(spans.length === 0){
+      const span = document.createElement('span')
+      span.className = 'content'
+      lineEl.appendChild(span)
+      selectSpan = span
+    }
+    else{
+      selectSpan = spans[0]
+    }
+    insertText(key)
+  }
+
+}
+function insertText(text:string) {
+  const sel = window.getSelection();
+  if(!sel) return
+  if (!sel.rangeCount) return;
+  
+  const range = sel.getRangeAt(0);
+  range.deleteContents();
+  
+  const textNode = document.createTextNode(text);
+  range.insertNode(textNode);
+  
+  // 移动光标到插入内容后
+  range.setStartAfter(textNode);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 onBeforeMount(()=>{
