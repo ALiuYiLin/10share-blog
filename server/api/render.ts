@@ -18,7 +18,7 @@ export const renderDocs:Api = {
   path: "/render",
   method: "get",
   apiHandler: async (req) => {    
-    const docPath = 'example/index.md'
+    const docPath = req.query['docPath']+'.md'
     const fileString = fs.readFileSync(path.resolve(DOCS_ROOT,docPath),{encoding:'utf-8'})
     const md = new Markdwon()
     const env = {} as {sfcBlocks:MarkdownSfcBlocks}

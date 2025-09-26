@@ -12,8 +12,4 @@ const title = ref('mytitle')
 {{1 + 1}}
 ```
 ### hrm2222222@@223###
-<style>
-h1 {
- color: blue;
-}
-</style>
+{{1+1}}

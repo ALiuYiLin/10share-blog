@@ -1,5 +1,5 @@
 import { createSSRApp } from "vue"
-import APP from "./APP.vue"
+import APP from "./App.vue"
 import { createRouter } from "./router"
 
 export const createApp = ()=>{

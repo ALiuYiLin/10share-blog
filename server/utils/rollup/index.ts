@@ -1,28 +1,15 @@
-import { InputOption, InputPluginOption, rollup, RollupOptions } from "rollup";
-import fs from 'fs'
+import { InputPluginOption, rollup, RollupOptions } from "rollup";
 import vuePlugin from "@vitejs/plugin-vue";
 import { createRequire } from "module";
 import esbuild from "rollup-plugin-esbuild";
+import alias from '@rollup/plugin-alias';
+import { APP_ROOT } from "..";
 
 const require = createRequire(import.meta.url);
 const postcss = require("rollup-plugin-postcss");
 
 
 const virtualFile = 'virtual.vue'
-
-
-function getMyFs(content:string){
-  return {
-    promises: {
-      readFile: (path:string, options?: any)=>{
-        if(path === virtualFile) return new Promise((resolve,reject)=>{
-          resolve(content)
-        })
-        return fs.promises.readFile(path,options)
-      }
-    }
-  }
-}
 
 
 export class VueCompile     {
@@ -42,6 +29,11 @@ export class VueCompile     {
           if(id === virtualFile) return _this.vueSrc
         },
       },
+      alias({
+      entries: [
+        { find: '@', replacement: APP_ROOT },
+      ]
+    }),
       vuePlugin(),
       postcss({inject: false}),
       {

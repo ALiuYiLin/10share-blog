@@ -22,8 +22,11 @@
     "vue-router": "^4.5.1"
   },
   "devDependencies": {
+    "@mdit-vue/plugin-component": "^3.0.2",
+    "@mdit-vue/plugin-frontmatter": "^3.0.2",
     "@mdit-vue/plugin-sfc": "^3.0.2",
     "@rollup/browser": "^4.50.1",
+    "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",

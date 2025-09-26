@@ -1,6 +1,5 @@
-import { codeWrapperPlugin, dangerPlugin, detailsPlugin, highlightPlugin, infoPlugin, tipPlugin, vPreContainerPlugin, warningPlugin } from "#/plugins/markdown";
-import MarkdownIt, { PluginWithParams } from "markdown-it";
-import { MarkdownItAsync,type PluginSimple } from "markdown-it-async";
+import { codeWrapperPlugin, dangerPlugin, detailsPlugin, highlightPlugin, infoPlugin, tipPlugin, vPreContainerPlugin, warningPlugin, zcomponentPlugin, zsfcPlugin } from "#/plugins/markdown";
+import { MarkdownItAsync } from "markdown-it-async";
 
 
 export interface MarkdwonPlugin {
@@ -20,6 +19,8 @@ export class Markdwon {
       codeWrapperPlugin,
       highlightPlugin(),
       vPreContainerPlugin(),
+      zsfcPlugin,
+      zcomponentPlugin,
       infoPlugin(),
       tipPlugin(),
       warningPlugin(),
